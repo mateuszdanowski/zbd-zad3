@@ -29,7 +29,7 @@ numer elfa | % udanych transakcji | czas działania (s)
 19|20|51.71
 20|20|69.19
 
-Rzeczywiście obecny system pakowania paczek jest lekko mówiąc słaby. Średnia liczba udanych transakcji wynosi 20%, a średni czas pracy elfa to około 66 sekund. W trakcie symulacji pojawia się masa błędów, które informormują nas o niepowodzeniu komendy `UPDATE`. Nie wykonuje się ona poprawnie, ponieważ postgres w tym samym czasie wykrywa zakleszczenie.
+Rzeczywiście obecny system pakowania paczek jest lekko mówiąc słaby. Średnia liczba udanych transakcji wynosi 20%, a średni czas pracy elfa to około 66 sekund. W trakcie symulacji pojawia się masa błędów, które informują nas o niepowodzeniu komendy `UPDATE`. Nie wykonuje się ona poprawnie, ponieważ postgres w tym samym czasie wykrywa zakleszczenie.
 
 #### Pomysły na usprawnienie systemu
 
