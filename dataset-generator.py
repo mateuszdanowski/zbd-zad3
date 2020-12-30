@@ -9,14 +9,8 @@ MAX_CANDIES = 5
 def append_to_file(elf_no, letter_no, letter_info):
     filename = f'dataset/elf{elf_no}'
 
-    # Arbitrary values, probably want to randomize them
     letter_len = random.randint(1, MAX_CANDIES)
     chosen_candies = random.sample(CANDIES, letter_len)
-    # country = 'Polska'
-    # recipient_desc = 'Krzysztof Ciebiera'
-
-    # candy_name = 'Czekolada'
-    # quantity = 65
 
     with open(filename, 'a') as file:
         country, recipient_desc = letter_info
@@ -56,8 +50,9 @@ def generate_dataset(n_sets, n_letters):
 
 
 def generate_data_for_candies_in_stock(candies):
-    # quantities = (1, 10, 100, 1000, 10000)
-    quantities = (1000, 1000, 1000, 1000, 1000)
+    quantities = (1, 10, 10, 10, 10000)
+
+    # For easier examples
     # quantities = (10000, 10000, 10000, 10000, 10000)
 
     candies_in_stock = zip(candies, quantities)
@@ -113,7 +108,7 @@ def insert_tables():
 
 if __name__ == '__main__':
     n_sets = 20
-    n_letters = 100
+    n_letters = 10
 
     for i in range(1, len(sys.argv)):
         split_equal = sys.argv[i].split('=')

@@ -25,7 +25,7 @@ def print_stats(elf_no, transactions, commited, finish_time):
             else:
                 output.write(f'{elf_no}: {commited}/{transactions}\n')
         else:
-            output.write(f'{int(commited / transactions * 100)};{finish_time}\n')
+            output.write(f'{elf_no};{int(commited / transactions * 100)};{finish_time}\n')
 
 
 # 1 letter -> 1 package
@@ -38,7 +38,7 @@ def create_package(cur, letter_info, letter_content):
     # Optimization
     letter_content = sorted(letter_content)
 
-    # Optimization??
+    # Optimization?? (if set to True)
     update_on_finish = False
 
     # 2. Add package to the table 'packages'
@@ -80,6 +80,11 @@ def create_package(cur, letter_info, letter_content):
             cur.execute("SELECT similar_to FROM similar_candies WHERE candy = %s ORDER BY similarity_level DESC;", [candy_name])
             query_result = cur.fetchall()
 
+            # Nasty adversary elf
+            # if elf_no == 10:
+            #     print("SLEEP")
+            #     time.sleep(0.5)
+
             if len(query_result) < 1:
                 if DEBUG:
                     print(f"{ELF_NO}: Not enough in stock, no similar candies, can't meet the criteria :(")
@@ -96,6 +101,11 @@ def create_package(cur, letter_info, letter_content):
             for similar_candie in similar_candies:
                 cur.execute("SELECT in_stock FROM candies_in_stock WHERE name = %s;", [similar_candie])
                 in_stock = cur.fetchall()[0][0]
+
+                # Nasty adversary elf
+                # if elf_no == 10:
+                #     print("SLEEP")
+                #     time.sleep(0.5)
 
                 if DEBUG:
                     print(f'{ELF_NO}: Similar candy: {similar_candie}, in stock: {in_stock}')
@@ -118,19 +128,15 @@ def create_package(cur, letter_info, letter_content):
 
         # Add chosen_candy to the package
         cur.execute("INSERT INTO candies_in_package VALUES (%s, %s, %s);", [package_id, chosen_candy, wanted_quantity])
-        
-        # print(elf_no)
-        # time.sleep(1)
-        # if elf_no == 1:
-        #     print("SLEEEEEEEEEEEEP")
-        #     time.sleep(10)
 
         if not update_on_finish:
             try:
                 cur.execute("UPDATE candies_in_stock SET in_stock = in_stock - %s WHERE name = %s;", [wanted_quantity, chosen_candy])
+                
+                # Nasty adversary elf
                 # if elf_no == 10:
-                    # print("SLEEEEEEEEEEEEP")
-                    # time.sleep(0.5)
+                #     print("SLEEP")
+                #     time.sleep(0.5)
             except Exception as error:
                 print(f'{ELF_NO}: ERROR: Update failed (in_stock constraint): {error}')
                 return False
@@ -158,6 +164,9 @@ def simulate_elf(elf_no):
 
     conn = psycopg2.connect("dbname=mateuszdanowski")
     cur = conn.cursor()
+
+    # Optimalization
+    conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_SERIALIZABLE)
 
     start_time = time.time()
     try:
@@ -187,7 +196,24 @@ def simulate_elf(elf_no):
                     print(f'{ELF_NO}: BEGIN') # debug
 
                 transactions += 1
-                package_created = create_package(cur, letter_info, letter_content)
+
+                # Uncomment if working in read_committed
+                # package_created = create_package(cur, letter_info, letter_content)
+
+                # Optimalization
+                # Comment out if working in serializable
+                package_created = False
+                retry_no = 0
+                while retry_no < 10000:
+                    try:
+                        package_created = create_package(cur, letter_info, letter_content)
+                    except Exception as error:
+                        retry_no += 1
+                        if DEBUG:
+                            print(f'{ELF_NO}: Error during packing, retry number {retry_no}: {error}')
+                    if package_created:
+                        break
+
 
                 # Commit or Rollback depending on the result
                 if package_created:
